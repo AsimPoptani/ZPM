@@ -1,6 +1,8 @@
 import psutil
 import requests
 from configparser import *
+import datetime
+import json
 
 
 def main():
@@ -19,7 +21,41 @@ def main():
     except Exception:
         print("There is an issue with the config file please make sure you have all the settings required.")
         exit()
-    
+
+    ### Try and get the usage space for all partitions
+    disk_partitions=psutil.disk_partitions()
+    disk_usage=[]
+    for partition in disk_partitions:
+        disk_usage.append(psutil.disk_usage(partition[1]))
+    # Generate the JSON we want to send 
+    data = {
+        'cpu': {
+            'percent': {
+                'overall': psutil.cpu_percent(),
+                'individual': psutil.cpu_percent(percpu=True),
+            },
+            'freq': {
+                'overall': psutil.cpu_freq(),
+                'individual': psutil.cpu_freq(percpu=True)
+            }
+        },
+        'disk': {
+            'usage': disk_usage,
+            'partitions': psutil.disk_partitions()
+
+        },
+        'memory': {
+            'swap': psutil.swap_memory(),
+            'virtual' : psutil.virtual_memory(),
+        },
+        'sensors': {
+            'temperature' : psutil.sensors_temperatures(),
+            'fan': psutil.sensors_fans(),
+            'battery' : psutil.sensors_battery()
+        },
+        'date': datetime.datetime.utcnow().isoformat()
+    }
+
     # Verify the connection to the server is good
     
     # Get data from our PC every X seconds and send to server based on config file
