@@ -57,6 +57,7 @@ def main():
     }
 
     # Verify the connection to the server is good
+    requests.post('http://localhost:5000',data={"body":json.JSONEncoder().encode(data)})
     
     # Get data from our PC every X seconds and send to server based on config file
 
